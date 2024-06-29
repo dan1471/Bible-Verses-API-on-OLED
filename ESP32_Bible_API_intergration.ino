@@ -1,7 +1,6 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
-
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -12,10 +11,12 @@ Adafruit_SSD1306 display(128, 64, &Wire, -1);
 // Button pins
 const int buttonUpPin = 12;
 const int buttonDownPin = 14;
+const int buttonSelectPin = 13;
 int buttonUpState = 0;
 int buttonDownState = 0;
+int buttonSelectState = 0;
 
-// Put your WiFi Credentials here
+// WiFi Credentials
 const char* ssid = "Droid O'clock ";
 const char* password = "2024_Kenya";
 
@@ -27,95 +28,86 @@ String verseReference;
 int scrollOffset = 0;
 int maxScrollOffset = 0;
 
+// Menu variables
+const int menuItems = 2;
+int selectedItem = 0;
+String menu[menuItems] = {"Fetch Verse", "Settings"};
+
 void setup() {
   Serial.begin(115200);
 
-  // Setup the OLED Display and initialize: address => 0x3C or 0x3D
+  // Setup the OLED Display and initialize
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
   // Setup buttons
   pinMode(buttonUpPin, INPUT_PULLUP);
   pinMode(buttonDownPin, INPUT_PULLUP);
+  pinMode(buttonSelectPin, INPUT_PULLUP);
 
-  // We start by connecting to a WiFi network
+  // Connect to WiFi
   WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED) {
+  displayWiFiConnecting();
+  unsigned long startAttemptTime = millis();
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 10000) {
     delay(500);
-    Serial.print(".");
+  }
+  if (WiFi.status() == WL_CONNECTED) {
+    displayWiFiConnected();
+  } else {
+    displayWiFiFailed();
   }
 
-  Serial.println("");
-  Serial.println("WiFi connected.");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  fetchVerse();
+  displayMenu();
 }
 
 void loop() {
   // Read button states
   buttonUpState = digitalRead(buttonUpPin);
   buttonDownState = digitalRead(buttonDownPin);
+  buttonSelectState = digitalRead(buttonSelectPin);
 
-  // Check if the up button is pressed
+  // Menu navigation
   if (buttonUpState == LOW) {
-    if (scrollOffset > 0) {
-      scrollOffset -= 8; // Adjust scroll speed as needed
-    }
-    displayVerse();
+    selectedItem = (selectedItem - 1 + menuItems) % menuItems;
+    displayMenu();
+    delay(200); // Debounce delay
+  } else if (buttonDownState == LOW) {
+    selectedItem = (selectedItem + 1) % menuItems;
+    displayMenu();
+    delay(200); // Debounce delay
+  } else if (buttonSelectState == LOW) {
+    executeMenuAction();
     delay(200); // Debounce delay
   }
-
-  // Check if the down button is pressed
-  if (buttonDownState == LOW) {
-    if (scrollOffset < maxScrollOffset) {
-      scrollOffset += 8; // Adjust scroll speed as needed
-    }
-    displayVerse();
-    delay(200); // Debounce delay
-  }
-
-  delay(100);
 }
 
 void fetchVerse() {
+  // Display progress bar
+  displayProgressBar();
+
   // Wait for WiFi connection
   if (WiFi.status() == WL_CONNECTED) {
-
     HTTPClient http;
-
-    // Set HTTP Request Final URL
     http.begin(URL);
-
-    // Start connection and send HTTP Request
     int httpCode = http.GET();
 
-    // httpCode will be negative on error
-    if (httpCode > 0) {
-
-      // Read Data as a JSON string
+    if (httpCode == HTTP_CODE_OK) {
       String JSON_Data = http.getString();
-      Serial.println(JSON_Data);
-
-      // Parse the JSON data
       DynamicJsonDocument doc(2048);
-      deserializeJson(doc, JSON_Data);
-      JsonObject obj = doc.as<JsonObject>();
-
-      verseReference = obj["reference"].as<String>();
-      verseText = obj["text"].as<String>();
-
-      // Calculate max scroll offset based on text length
-      int textHeight = (verseText.length() / 21 + 1) * 8; // 21 chars per line, 8 pixels per line height
-      maxScrollOffset = textHeight - 64; // 64 pixels display height
-
-      scrollOffset = 0;
-      displayVerse();
-
+      DeserializationError error = deserializeJson(doc, JSON_Data);
+      if (!error) {
+        JsonObject obj = doc.as<JsonObject>();
+        verseReference = obj["reference"].as<String>();
+        verseText = obj["text"].as<String>();
+        int textHeight = (verseText.length() / 21 + 1) * 8;
+        maxScrollOffset = textHeight - 64;
+        scrollOffset = 0;
+        displayVerse();
+      } else {
+        Serial.println("Failed to parse JSON!");
+      }
     } else {
-      Serial.println("Error!");
-      delay(2000);
+      Serial.printf("HTTP GET request failed with error: %s\n", http.errorToString(httpCode).c_str());
     }
     http.end();
   }
@@ -123,14 +115,85 @@ void fetchVerse() {
 
 void displayVerse() {
   display.clearDisplay();
-
-  display.setTextSize(1);               // Normal 1:1 pixel scale
-  display.setTextColor(SSD1306_WHITE);  // Draw white text
-  display.setCursor(0, -scrollOffset);  // Start at top-left corner and apply scroll offset
-
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, -scrollOffset);
   display.print("Reference: ");
   display.println(verseReference);
   display.println(verseText);
+  display.display();
+}
 
+void displayMenu() {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+
+  for (int i = 0; i < menuItems; i++) {
+    if (i == selectedItem) {
+      display.print("> ");
+    } else {
+      display.print("  ");
+    }
+    display.println(menu[i]);
+  }
+  display.display();
+}
+
+void executeMenuAction() {
+  if (selectedItem == 0) {
+    fetchVerse();
+  } else if (selectedItem == 1) {
+    displaySettings();
+  }
+}
+
+void displaySettings() {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.println("Settings Menu");
+  display.display();
+  delay(2000);
+  displayMenu();
+}
+
+void displayProgressBar() {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println("Fetching Verse...");
+  for (int i = 0; i < 128; i++) {
+    display.drawLine(0, 10, i, 10, SSD1306_WHITE);
+    display.display();
+    delay(10);
+  }
+}
+
+void displayWiFiConnecting() {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println("Connecting to WiFi...");
+  display.display();
+}
+
+void displayWiFiConnected() {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println("WiFi Connected!");
+  display.display();
+}
+
+void displayWiFiFailed() {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println("WiFi Connection Failed");
   display.display();
 }
