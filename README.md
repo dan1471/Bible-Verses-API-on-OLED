@@ -1,81 +1,65 @@
-###📖 Random Bible Verses Display on OLED
+ 📖 Bible Verses on OLED Display ⏱️
 
-Welcome to the Random Bible Verses Display project! This project fetches and displays random Bible verses from the Bible API on an OLED display every minute. It includes features for scrolling through the verses using physical buttons. Perfect for a daily dose of inspiration!
-✨ Features
+Welcome to the Bible Verses on OLED Display project! This creative and inspirational project fetches random Bible verses from the Bible API every minute and displays them on an OLED screen. Whether you're looking for a moment of reflection or just want to brighten your day, this project is here to deliver!
+🌟 Features
 
-   - Displays a new random Bible verse every minute.
-   - Scrollable text using up and down buttons.
-    - Simple setup with WiFi credentials.
-    - Clear and readable text on a 128x64 OLED display.
+    Random Verses: Fetches a random Bible verse every minute.
+    WiFi Connectivity: Connects seamlessly to your WiFi network.
+    Interactive Display: Scroll through the verses with up and down buttons.
+    Modern OLED Display: Utilizes a crisp and clear OLED screen to show the text.
 
-###🛠 Hardware Requirements
+📷 Preview
 
-   - ESP32 Development Board
-    -128x64 OLED Display (e.g., Adafruit SSD1306)
-    -Push Buttons (x2)
-    -Connecting Wires
+🛠️ Hardware Requirements
 
-###📋 Installation
+    Microcontroller: Compatible with ESP32.
+    OLED Display: 128x64 pixels.
+    Buttons: Two buttons for scrolling.
+    WiFi: A WiFi network for connectivity.
 
-   - Clone the Repository
+📶 Getting Started
 
-    bash
+    Clone the Repository:
 
-git clone https://github.com/your-username/Bible-Verses-API-on-OLED.git
-cd Bible-Verses-API-on-OLED
+    sh
 
-Set Up Your Development Environment
+    git clone https://github.com/your-username/Bible-Verses-API-on-OLED.git
 
-    Install the Arduino IDE if you haven't already.
-    Install the required libraries:
-        Adafruit GFX Library
-        Adafruit SSD1306 Library
-        ArduinoJson Library
+    Install Dependencies:
+        Install the required libraries in your Arduino IDE:
+            WiFi
+            HTTPClient
+            ArduinoJson
+            Adafruit GFX
+            Adafruit SSD1306
 
-Connect Your Hardware
+    Configure WiFi:
+        Update the ssid and password variables in the code with your WiFi credentials.
 
-    Connect the OLED display to your ESP32.
-    Connect the buttons to the specified GPIO pins.
+    Upload the Code:
+        Connect your microcontroller to your computer and upload the code using the Arduino IDE.
 
-Configure WiFi Credentials
+🚀 How It Works
 
-    Open main.ino and update the WiFi SSID and password:
+    Connect to WiFi: The device connects to your WiFi network.
+    Fetch Verse: It fetches a random Bible verse from the Bible API.
+    Display Verse: The verse and its reference are displayed on the OLED screen.
+    Scroll: Use the buttons to scroll through longer verses.
 
-    cpp
+📚 Resources
 
-        const char* ssid = "Your_SSID";
-        const char* password = "Your_Password";
+    Bible API: Bible API Documentation
+    OLED Display Library: Adafruit SSD1306
 
-    Upload the Code
-        Select your ESP32 board and the correct COM port in the Arduino IDE.
-        Upload the code to your ESP32.
+🤝 Contribution
 
-🔄 How It Works
+Contributions are welcome! Feel free to fork the repository, make your changes, and submit a pull request.
+💬 Feedback
 
-    WiFi Connection
-        The ESP32 connects to your WiFi network using the provided credentials.
+If you have any suggestions or feedback, please open an issue on GitHub or contact us directly.
+🙏 Acknowledgements
 
-    Fetching Verses
-        A random Bible verse is fetched from the Bible API every minute.
+Special thanks to fredmunyao1 for the original inspiration for this project.
+ 
 
-    Displaying Verses
-        The verse is displayed on the OLED screen. You can scroll through the text using the up and down buttons.
-
-🚀 Quick Start
-
-    Power up your ESP32 and ensure it's connected to your WiFi network.
-    The OLED display will start showing a new random Bible verse every minute.
-    Use the up and down buttons to scroll through longer verses.
-
-🖼 Project Showcase
-
-OLED Display with Bible Verse
-🤝 Contributing
-
-Feel free to fork this repository and contribute! If you encounter any issues or have suggestions for improvements, please open an issue or submit a pull request.
-📄 License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-🌟 Acknowledgements
-
-Special thanks to fredmunyao1 for the original project this was forked from!
+Enjoy your journey through the Bible, one verse at a time! ✨📖✨
