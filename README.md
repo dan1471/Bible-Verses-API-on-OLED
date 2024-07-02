@@ -78,8 +78,8 @@ Connect the components as follows:
     - Upload the Code
 
 3.**Connect your ESP32/ESP8266 to your computer and select the appropriate board and port in the Arduino IDE. Then click the upload button.**
-
-    - Connect to WiFi
+ 
+       - Connect to WiFi
        - After uploading the code, the device will create a WiFi access point named "AutoConnectAP".
        - Connect to this WiFi network using your smartphone or computer.
        - Open a web browser and navigate to 192.168.4.1.
