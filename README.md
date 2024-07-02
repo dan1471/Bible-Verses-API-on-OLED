@@ -22,6 +22,49 @@ This project uses an ESP32/ESP8266 microcontroller to fetch random Bible verses 
 - Push buttons (x3)
 - Buzzer or speaker
 - Breadboard and connecting wires
+## WIRING
+# Circuit Diagram
+
+## Components:
+- ESP32 or ESP8266 microcontroller
+- SSD1306 OLED Display
+- Push Buttons (x3)
+- Buzzer or Speaker
+- Breadboard and Connecting Wires
+
+## Connections:
+
+### OLED Display:
+| OLED Pin | ESP32/ESP8266 Pin |
+|----------|-------------------|
+| VCC      | 3.3V              |
+| GND      | GND               |
+| SCL      | D1 (ESP8266) / SCL (ESP32) |
+| SDA      | D2 (ESP8266) / SDA (ESP32) |
+
+### Buttons:
+| Button Function | Button Pin | ESP32/ESP8266 Pin |
+|-----------------|------------|-------------------|
+| Up              | One end to | GPIO 12           |
+|                 | Other end to | GND            |
+| Down            | One end to | GPIO 14           |
+|                 | Other end to | GND            |
+| Select          | One end to | GPIO 13           |
+|                 | Other end to | GND            |
+
+### Buzzer:
+| Buzzer Pin      | ESP32/ESP8266 Pin |
+|-----------------|-------------------|
+| Positive        | GPIO 5            |
+| Negative        | GND               |
+
+## Breadboard Layout:
+1. Place the ESP32/ESP8266 on the breadboard.
+2. Connect the OLED display to the breadboard and connect its VCC to 3.3V and GND to GND of the microcontroller.
+3. Connect the SCL and SDA pins of the OLED display to the corresponding pins on the microcontroller.
+4. Place the three push buttons on the breadboard. Connect one end of each button to the respective GPIO pins on the microcontroller (GPIO 12, 14, 13) and the other end to GND.
+5. Connect the buzzer's positive pin to GPIO 5 on the microcontroller and the negative pin to GND.
+
 
 ## Libraries Required
 
