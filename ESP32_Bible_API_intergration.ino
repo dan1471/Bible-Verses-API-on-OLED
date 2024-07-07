@@ -1,4 +1,4 @@
- #include <WiFi.h>
+#include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <Wire.h>
@@ -11,8 +11,6 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWiFiManager.h>
 #include <Ticker.h>
-#include <time.h>
-#include <ESP8266Tone.h>
 
 // OLED Display Object
 Adafruit_SSD1306 display(128, 64, &Wire, -1);
