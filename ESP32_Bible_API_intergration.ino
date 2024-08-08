@@ -27,7 +27,7 @@ int buttonSelectState = 0;
 const int soundPin = 5;
 
 // WiFi Credentials
-const char* ssid = "Droid O'clock ";
+const char* ssid = "Droid O'clock";
 const char* password = "2024_Kenya";
 
 // URL Endpoint for the API
@@ -60,7 +60,7 @@ void setup() {
   // Setup the OLED Display and initialize
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println(F("SSD1306 allocation failed"));
-    for (;;);
+    while (true);
   }
 
   // Setup buttons
@@ -71,9 +71,13 @@ void setup() {
   // Setup sound pin
   pinMode(soundPin, OUTPUT);
 
-  // Connect to WiFi
+  // Connect to WiFi with error handling
   AsyncWiFiManager wifiManager(&server, &dns);
-  wifiManager.autoConnect("AutoConnectAP");
+  displayWiFiConnecting();
+  if (!wifiManager.autoConnect("AutoConnectAP")) {
+    displayWiFiFailed();
+    while (true); // Halt the program if WiFi fails to connect
+  }
 
   // Initialize NTP Client
   timeClient.begin();
@@ -114,31 +118,41 @@ void fetchVerse() {
   // Display progress bar
   displayProgressBar();
 
-  // Wait for WiFi connection
+  // Check if WiFi is connected before making the HTTP request
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
     http.begin(URL);
     int httpCode = http.GET();
 
-    if (httpCode == HTTP_CODE_OK) {
-      String JSON_Data = http.getString();
-      DynamicJsonDocument doc(2048);
-      DeserializationError error = deserializeJson(doc, JSON_Data);
-      if (!error) {
-        JsonObject obj = doc.as<JsonObject>();
-        verseReference = obj["reference"].as<String>();
-        verseText = obj["text"].as<String>();
-        int textHeight = (verseText.length() / 21 + 1) * 8;
-        maxScrollOffset = textHeight - 64;
-        scrollOffset = 0;
-        displayVerse();
+    if (httpCode > 0) { // Check for HTTP response
+      if (httpCode == HTTP_CODE_OK) {
+        String JSON_Data = http.getString();
+        DynamicJsonDocument doc(2048);
+        DeserializationError error = deserializeJson(doc, JSON_Data);
+        if (!error) {
+          JsonObject obj = doc.as<JsonObject>();
+          verseReference = obj["reference"].as<String>();
+          verseText = obj["text"].as<String>();
+          int textHeight = (verseText.length() / 21 + 1) * 8;
+          maxScrollOffset = textHeight - 64;
+          scrollOffset = 0;
+          displayVerse();
+        } else {
+          Serial.println("Failed to parse JSON!");
+          displayError("JSON Parsing Error");
+        }
       } else {
-        Serial.println("Failed to parse JSON!");
+        Serial.printf("HTTP GET failed, error: %d\n", httpCode);
+        displayError("HTTP Request Failed");
       }
     } else {
       Serial.printf("HTTP GET request failed with error: %s\n", http.errorToString(httpCode).c_str());
+      displayError("HTTP Request Failed");
     }
     http.end();
+  } else {
+    Serial.println("WiFi not connected");
+    displayError("No WiFi Connection");
   }
 
   // Play sound alert
@@ -261,4 +275,17 @@ void displayIdleScreen() {
   display.println("Mr Arduino");
   
   display.display();
+}
+
+void displayError(const char* errorMsg) {
+  ticker.detach(); // Stop idle screen ticker
+  display.clearDisplay();
+  display.setFont(&FreeMono9pt7b); // Set custom font
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 16);
+  display.println(errorMsg);
+  display.display();
+  delay(3000);
+  displayMenu(); // Return to menu after error display
 }
